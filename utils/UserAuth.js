@@ -1,5 +1,7 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const { SECRET } = require('../config');
 
 const userRegistration = async (userDetails, role, res) => {
   try {
@@ -63,10 +65,30 @@ const userLogin = async (userDetails, res) => {
     //Check for password
     let isMatch = await bcrypt.compare(password, user.password);
     if (isMatch) {
+      //Generate JWT token
+      let token = jwt.sign(
+        {
+          user_id: user._id,
+          role: user.role,
+          email: user.email,
+          username: user.username,
+        },
+        SECRET,
+        { expiresIn: '7 days' }
+      );
+
+      let result = {
+        username: user.username,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        token: `Bearer ${token}`,
+        expiresIn: 168,
+      };
       //Success userLogin
       return res
         .status(200)
-        .json({ message: 'User login success', success: true });
+        .json({ ...result, message: 'User login success', success: true });
     }
 
     return res.status(500).json({
