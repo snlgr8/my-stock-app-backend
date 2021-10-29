@@ -1,22 +1,18 @@
-const { Schema, model } = require("mongoose");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const crypto = require("crypto");
+const { Schema, model } = require('mongoose');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 
 const UserSchema = new Schema(
   {
     name: {
       type: String,
-      required: [true, "Please provide name"],
-    },
-    username: {
-      type: String,
-      required: [true, "Please provide username"],
+      required: [true, 'Please provide name'],
     },
     password: {
       type: String,
       minLength: 6,
-      required: [true, "Please provide password"],
+      required: [true, 'Please provide password'],
       select: false,
     },
     email: {
@@ -24,13 +20,13 @@ const UserSchema = new Schema(
       unique: true,
       match: [
         /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-        "Please provide a valid email id",
+        'Please provide a valid email id',
       ],
-      required: [true, "Please provide email id"],
+      required: [true, 'Please provide email id'],
     },
     role: {
       type: String,
-      default: "user",
+      default: 'user',
     },
     resetPasswordToken: String,
     resetPasswordExpiry: Date,
@@ -38,8 +34,8 @@ const UserSchema = new Schema(
   { timestamps: true }
 );
 
-UserSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) {
+UserSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) {
     next();
   }
   const salt = await bcrypt.genSalt(10);
@@ -63,12 +59,12 @@ UserSchema.methods.generateToken = function () {
 };
 
 UserSchema.methods.generatePasswordResetToken = function () {
-  const resetToken = crypto.randomBytes(35).toString("hex");
+  const resetToken = crypto.randomBytes(35).toString('hex');
   this.resetPasswordToken = crypto
-    .createHash("sha256")
+    .createHash('sha256')
     .update(resetToken)
-    .digest("hex");
+    .digest('hex');
   this.resetPasswordExpiry = Date.now() + 10 * (60 * 1000);
   return resetToken;
 };
-module.exports = model("User", UserSchema);
+module.exports = model('User', UserSchema);
